@@ -10,6 +10,8 @@ An independent, student-run daily newsletter on financial markets: a website plu
 
 Built with Next.js 16, TypeScript, Tailwind CSS, MDX, Recharts, React Email, and Resend. Hosted on Vercel.
 
+**Working on this with a teammate?** Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the daily routine, and house rules.
+
 > For educational purposes only. Not investment advice.
 > An independent student publication. Not affiliated with or endorsed by Emory University.
 
