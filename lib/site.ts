@@ -40,11 +40,14 @@ export const site = {
   about: {
     mission:
       "We're Emory students who think markets are easier to understand when someone explains them plainly. Every weekday morning we send a five-minute read on what moved, why, and what it means, written for students, not traders.",
-    /** Edit this list with your real team. `role` shows under the name. */
+    /**
+     * The team on the About page. `role` shows under the name.
+     * `photo` is a square image in public/team/ (optional; initials show if left out).
+     */
     team: [
-      { name: "Chase Roeder", role: "Co-Founder", school: "Emory ’30" },
-      { name: "Luke Frey", role: "Co-Founder", school: "Emory ’30" },
-    ],
+      { name: "Chase Roeder", role: "Co-Founder", school: "Emory ’30", photo: "/team/chase-roeder.webp" },
+      { name: "Luke Frey", role: "Co-Founder", school: "Emory ’30", photo: "/team/luke-frey.webp" },
+    ] as { name: string; role: string; school: string; photo?: string }[],
   },
 
   /** Newsletter email settings (sending addresses live in .env.local) */

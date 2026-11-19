@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/components/Avatar";
 import { PageHeader, PageSection } from "@/components/PageHeader";
@@ -55,19 +56,33 @@ export default function AboutPage() {
       </PageSection>
 
       <PageSection title="The team">
-        {/* Columns adapt to team size: 2 people fill one row; 3+ spread out */}
+        {/* Columns adapt to team size: 2 people side by side; 3+ spread out */}
         <ul
-          className={`grid gap-3 sm:grid-cols-2 ${
-            teamSize <= 2 ? "max-w-3xl" : teamSize === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+          className={`grid grid-cols-2 gap-3 sm:gap-4 ${
+            teamSize <= 2 ? "max-w-2xl" : teamSize === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
           }`}
         >
           {site.about.team.map((m, i) => (
-            <li key={`${m.name}-${i}`} className="flex items-center gap-4 rounded-2xl border border-rule bg-surface p-4 shadow-card">
-              <Avatar name={m.name} size={48} />
-              <div className="min-w-0">
-                <div className="truncate font-serif text-lg font-semibold text-ink-strong">{m.name}</div>
-                <div className="truncate text-sm text-ink">{m.role}</div>
-                <div className="num truncate text-xs text-ink-muted">{m.school}</div>
+            <li key={`${m.name}-${i}`} className="overflow-hidden rounded-2xl border border-rule bg-surface shadow-card">
+              {/* Photo above the name (initials if there's no photo yet) */}
+              {m.photo ? (
+                <Image
+                  src={m.photo}
+                  alt={`Photo of ${m.name}`}
+                  width={640}
+                  height={640}
+                  sizes="(min-width: 640px) 320px, 50vw"
+                  className="aspect-square w-full bg-surface-alt object-cover"
+                />
+              ) : (
+                <div className="band-alt flex aspect-square w-full items-center justify-center">
+                  <Avatar name={m.name} size={88} />
+                </div>
+              )}
+              <div className="p-4 text-center">
+                <div className="font-serif text-lg font-semibold leading-tight text-ink-strong sm:text-xl">{m.name}</div>
+                <div className="mt-1 text-sm text-ink">{m.role}</div>
+                <div className="num mt-0.5 text-xs text-ink-muted">{m.school}</div>
               </div>
             </li>
           ))}
