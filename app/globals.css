@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/*
+ * ─────────────────────────────────────────────────────────────
+ *  The Georgia Variant: design tokens
+ * ─────────────────────────────────────────────────────────────
+ *  There are two layers of color tokens:
+ *
+ *  1. BRAND tokens (fixed hex values from the style guide).
+ *     Use these when a color must never change, e.g. the navy hero bar.
+ *     Tailwind classes: bg-navy, text-light-blue, bg-pale-blue ...
+ *
+ *  2. SEMANTIC tokens (what the color is *for*). These swap
+ *     automatically in dark mode, so components rarely need `dark:` classes.
+ *     Tailwind classes: bg-page, bg-surface, text-ink, text-ink-muted,
+ *     border-rule, text-gain, text-loss ...
+ *
+ *  Dark mode is controlled by a `data-theme="dark"` attribute on <html>
+ *  (set by the inline script in app/layout.tsx and the theme toggle).
+ */
+
+/* Make Tailwind's `dark:` variant follow our data-theme attribute. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  /* Semantic tokens: LIGHT theme */
+  --page: #ffffff; /* main background */
+  --surface: #ffffff; /* cards */
+  --surface-alt: #eef5fb; /* alternating section bands */
+  --ink: #1f2937; /* body text (slate) */
+  --ink-muted: #6b7280; /* secondary text */
+  --ink-strong: #012169; /* headlines */
+  --rule: rgb(1 33 105 / 0.14); /* thin navy dividers */
+  --rule-strong: #012169;
+  --tag-bg: #b9d9eb; /* section tags */
+  --tag-ink: #012169;
+  --gain: #0f7b4a;
+  --loss: #b42318;
+  --shadow: 0 1px 2px rgb(1 33 105 / 0.06), 0 4px 16px rgb(1 33 105 / 0.06);
+  --shadow-hover: 0 2px 4px rgb(1 33 105 / 0.08), 0 12px 32px rgb(1 33 105 / 0.1);
+  color-scheme: light;
+}
+
+/* Inside a pale-blue band, gray text needs to be a touch darker to keep
+   WCAG AA (4.5:1) contrast. #6B7280 on #EEF5FB is only 4.39:1. */
+.band-alt {
+  background: var(--surface-alt);
+  --ink-muted: #586170;
+}
+
+/* Dark theme: navy is the base. Gain/loss use lighter tints so they
+   stay readable (≥7:1) on navy; the brand green/red are too dark here. */
+[data-theme="dark"] {
+  --page: #00133d;
+  --surface: #0a2559;
+  --surface-alt: #051c4b;
+  --ink: #e6edf7;
+  --ink-muted: #a9bce0;
+  --ink-strong: #ffffff;
+  --rule: rgb(185 217 235 / 0.16);
+  --rule-strong: #b9d9eb;
+  --tag-bg: rgb(185 217 235 / 0.16);
+  --tag-ink: #b9d9eb;
+  --gain: #5bd49a;
+  --loss: #ff9b91;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.3);
+  --shadow-hover: 0 8px 28px rgb(0 0 0 / 0.4);
+  color-scheme: dark;
+}
+[data-theme="dark"] .band-alt {
+  --ink-muted: #a9bce0;
+}
+
+@theme inline {
+  /* Brand tokens */
+  --color-navy: #012169;
+  --color-navy-deep: #00133d;
+  --color-light-blue: #b9d9eb;
+  --color-pale-blue: #eef5fb;
+  --color-slate: #1f2937;
+  --color-muted: #6b7280;
+  --color-brand-green: #0f7b4a;
+  --color-brand-red: #b42318;
+  /* Gain/loss tints for text sitting on the navy hero bar (always navy) */
+  --color-gain-on-navy: #6ee7a8;
+  --color-loss-on-navy: #fca5a5;
+
+  /* Semantic tokens (theme-aware) */
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-strong: var(--ink-strong);
+  --color-rule: var(--rule);
+  --color-rule-strong: var(--rule-strong);
+  --color-tag: var(--tag-bg);
+  --color-tag-ink: var(--tag-ink);
+  --color-gain: var(--gain);
+  --color-loss: var(--loss);
+
+  --shadow-card: var(--shadow);
+  --shadow-card-hover: var(--shadow-hover);
+
+  /* Fonts (CSS variables are injected by next/font in app/layout.tsx) */
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* `num` = tabular numerals. Put it on every price / percentage so
+   digits line up in columns and don't jiggle when values update. */
+@utility num {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+html {
+  background: var(--page);
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Element defaults go in the "base" layer so Tailwind classes like
+   `font-sans` on a specific heading can still override them. */
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-serif);
+    color: var(--ink-strong);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* Visible, on-brand keyboard focus ring everywhere */
+:focus-visible {
+  outline: 2px solid #b9d9eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:root:not([data-theme="dark"]) :focus-visible {
+  outline-color: #012169;
+}
+
+/* Ticker marquee animation (paused via a class, disabled for reduced motion) */
+@keyframes ticker-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+.ticker-track {
+  animation: ticker-scroll 60s linear infinite;
+}
+.ticker-track.is-paused,
+.ticker-viewport:hover .ticker-track,
+.ticker-viewport:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
+
+/* Article text (MDX bodies). Typography plugin, recolored to our tokens. */
+.prose-ledger {
+  --tw-prose-body: var(--ink);
+  --tw-prose-headings: var(--ink-strong);
+  --tw-prose-links: var(--ink-strong);
+  --tw-prose-bold: var(--ink-strong);
+  --tw-prose-bullets: var(--ink-muted);
+  --tw-prose-counters: var(--ink-muted);
+  --tw-prose-quotes: var(--ink-strong);
+  --tw-prose-quote-borders: var(--rule-strong);
+  --tw-prose-hr: var(--rule);
+  --tw-prose-captions: var(--ink-muted);
+  --tw-prose-code: var(--ink-strong);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+.prose-ledger :where(h2, h3) {
+  font-family: var(--font-serif);
+  font-weight: 600;
+}
+.prose-ledger :where(a) {
+  text-underline-offset: 3px;
+  text-decoration-color: var(--tag-bg);
+  text-decoration-thickness: 2px;
+}
