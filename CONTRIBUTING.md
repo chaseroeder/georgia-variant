@@ -42,11 +42,31 @@ Every work session, in GitHub Desktop:
 - **Pull often.** If GitHub Desktop reports a conflict, don't guess. Ask your teammate (or Claude) to help
   resolve it.
 
-### Vercel's free plan
+### This repository is public
 
-The site deploys from the repo owner's Vercel account. On Vercel's free Hobby plan, pushes from other
-collaborators to a private repo may not deploy automatically. If your push doesn't show up on the live site,
-tell the owner; they can redeploy from the Vercel dashboard (Deployments → ⋯ → Redeploy).
+Anyone on the internet can **read** this repo; only invited collaborators can **push**. Because it's public,
+every push to `main` by either of us goes live automatically. That also means:
+
+- **Never commit anything you wouldn't put on the website.** That includes unpublished Variant View picks: keep a
+  pick on your computer (don't commit it) until the day it's published, or it can be read early on GitHub.
+  Draft issues (`draft: true`) are hidden on the site but **visible on GitHub** once pushed.
+- **Keep your email private.** Turn on GitHub → Settings → Emails → "Keep my email addresses private", and use
+  the `…@users.noreply.github.com` address it shows as your git email
+  (`git config user.email "ID+username@users.noreply.github.com"` in this folder).
+- **Secrets stay out.** API keys live only in `.env.local` and in Vercel. If one is ever committed, regenerate it
+  immediately: deleting the file isn't enough, because git history keeps it.
+- **`main` is protected against force pushes and deletion.** History can't be rewritten or wiped by accident.
+
+Strangers can suggest changes (pull requests), but nothing merges unless one of us approves it.
+
+### Who can do what
+
+| | Chase (owner) | Luke (collaborator) |
+| --- | --- | --- |
+| Push changes and publish to the live site | ✓ | ✓ |
+| Review and merge pull requests | ✓ | ✓ |
+| Vercel dashboard, environment variables, API keys | ✓ | Ask Chase |
+| Repository settings, adding people | ✓ | Ask Chase |
 
 ---
 
