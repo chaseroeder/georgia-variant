@@ -10,7 +10,7 @@ export const site = {
   /** Short tagline under the masthead */
   tagline: "Markets, before your 8 a.m.",
   description:
-    "An independent, student-run daily newsletter on financial markets: market moves, macro, a weekly contrarian stock pick, and Emory alumni in finance.",
+    "An independent, student-run weekly newsletter on financial markets: market moves, macro, a weekly contrarian stock pick, and Emory alumni in finance.",
   /** Used for absolute URLs (SEO, Open Graph). Set NEXT_PUBLIC_SITE_URL on Vercel. */
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 
@@ -39,7 +39,7 @@ export const site = {
   /** About page */
   about: {
     mission:
-      "We're Emory students who think markets are easier to understand when someone explains them plainly. Every weekday morning we send a five-minute read on what moved, why, and what it means, written for students, not traders.",
+      "We're Emory students who think markets are easier to understand when someone explains them plainly. Every Monday morning we send a five-minute read on what moved last week, why, and what it means, written for students, not traders.",
     /** Edit this list with your real team. `role` shows under the name. */
     team: [
       { name: "Chase Roeder", role: "Co-Founder", school: "Emory ’30" },

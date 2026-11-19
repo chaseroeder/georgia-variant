@@ -8,7 +8,7 @@ export const contentType = ogContentType;
 
 export default function Image() {
   return shareImage({
-    eyebrow: "Daily markets newsletter",
+    eyebrow: "Weekly markets newsletter",
     title: site.tagline,
     subtitle: "Market moves, macro, a weekly contrarian stock pick, and Emory alumni in finance.",
   });

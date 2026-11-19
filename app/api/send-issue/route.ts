@@ -1,5 +1,5 @@
 /**
- * Sends today's issue to subscribers.
+ * Sends the weekly letter to subscribers (Mondays, 7 a.m. New York time).
  *
  * Two ways in:
  *
@@ -12,7 +12,7 @@
  *
  *  2. AUTOMATIC: Vercel Cron calls GET /api/send-issue (see vercel.json).
  *     It does nothing unless CRON_ENABLED=true, and it only sends at
- *     7 a.m. New York time on weekdays.
+ *     7 a.m. New York time on Mondays.
  *
  * Every request must include `Authorization: Bearer <CRON_SECRET>`.
  * Vercel adds this header to cron requests automatically.
@@ -41,8 +41,8 @@ export async function GET(req: NextRequest) {
   // vercel.json schedules two runs (11:00 and 12:00 UTC) because 7 a.m. New York
   // is 11:00 UTC in summer and 12:00 UTC in winter. Only the one at 7 a.m. sends.
   const { hour, weekday } = newYorkClock();
-  if (hour !== 7 || weekday === "Sat" || weekday === "Sun") {
-    return NextResponse.json({ skipped: `Not 7 a.m. on a weekday in New York (it's ${weekday} ${hour}:00).` });
+  if (hour !== 7 || weekday !== "Mon") {
+    return NextResponse.json({ skipped: `Not 7 a.m. on a Monday in New York (it's ${weekday} ${hour}:00).` });
   }
 
   return run("send", { force: false });

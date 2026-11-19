@@ -91,7 +91,7 @@ And look at your change on a phone-sized screen and in dark mode (moon icon in t
 
 | What | Where | File name |
 | --- | --- | --- |
-| Daily issue | `content/issues/` | `YYYY-MM-DD.mdx` (create with `npm run new-issue`) |
+| Weekly letter | `content/issues/` | `YYYY-MM-DD.mdx`, dated the Monday it sends (create with `npm run new-issue`) |
 | Variant View pick | `content/variant-view/` | `YYYY-MM-DD-TICKER.mdx` |
 | Alumni profile | `content/alumni/` | `firstname-lastname.mdx` (copy `_template.mdx`) |
 

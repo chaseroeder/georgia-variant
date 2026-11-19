@@ -32,7 +32,7 @@ export default function AboutPage() {
             <div>
               <h2 className="text-3xl font-semibold text-white sm:text-4xl">Get it before the bell</h2>
               <p className="mt-3 text-white/80">
-                One email, every weekday morning. Five minutes, no jargon, free.
+                One email, every Monday morning. Five minutes, no jargon, free.
               </p>
             </div>
             <SubscribeForm tone="navy" />

@@ -178,7 +178,7 @@ export default async function HomePage() {
               <h2 id="home-subscribe" className="text-3xl font-semibold text-white">
                 Get this in your inbox
               </h2>
-              <p className="mt-2 text-white/80">Every weekday before the opening bell. Free.</p>
+              <p className="mt-2 text-white/80">Every Monday before the opening bell. Free.</p>
             </div>
             <SubscribeForm tone="navy" />
           </div>

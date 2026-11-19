@@ -20,7 +20,7 @@ export default function WelcomeEmail({ siteName, siteUrl, initials, disclaimer }
   return (
     <Html lang="en">
       <Head />
-      <Preview>{`You're in. ${siteName} arrives before the opening bell every weekday.`}</Preview>
+      <Preview>{`You're in. ${siteName} arrives before the opening bell every Monday.`}</Preview>
       <Body style={{ backgroundColor: "#EEF5FB", margin: 0, padding: "24px 0", fontFamily: sans }}>
         <Container style={{ maxWidth: 560, backgroundColor: "#ffffff", borderRadius: 12, overflow: "hidden" }}>
           <Section style={{ backgroundColor: navy, padding: "24px 28px" }}>
@@ -31,11 +31,11 @@ export default function WelcomeEmail({ siteName, siteUrl, initials, disclaimer }
           </Section>
           <Section style={{ padding: "24px 28px" }}>
             <Text style={{ fontSize: 16, lineHeight: "24px", color: "#1F2937", margin: 0 }}>
-              You&rsquo;re subscribed. Every weekday morning you&rsquo;ll get a five-minute read on markets: what moved and why,
+              You&rsquo;re subscribed. Every Monday morning you&rsquo;ll get a five-minute read on markets: what moved last week and why,
               rates and the Fed, a weekly contrarian stock pick, and Emory alumni doing interesting work in finance.
             </Text>
             <Text style={{ fontSize: 16, lineHeight: "24px", color: "#1F2937", margin: "16px 0 0" }}>
-              Can&rsquo;t wait until tomorrow? Today&rsquo;s issue is already on the site.
+              Can&rsquo;t wait until Monday? The latest letter is already on the site.
             </Text>
             <Link
               href={siteUrl}
