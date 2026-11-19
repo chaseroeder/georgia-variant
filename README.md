@@ -1,6 +1,6 @@
 # The Georgia Variant
 
-An independent, student-run daily newsletter on financial markets: a website plus a weekday morning email.
+An independent, student-run weekly newsletter on financial markets: a website plus a Monday morning email.
 
 - **Market Pulse:** indices, top movers, sector heatmap, "why it moved"
 - **Macro Desk:** Treasury yields and the curve, the Fed, CPI, jobs, GDP
@@ -21,11 +21,11 @@ Built with Next.js 16, TypeScript, Tailwind CSS, MDX, Recharts, React Email, and
 
 1. [Run it on your computer](#1-run-it-on-your-computer)
 2. [Get the free API keys](#2-get-the-free-api-keys-optional-but-recommended)
-3. [Publish the daily issue](#3-publish-the-daily-issue)
+3. [Publish the weekly letter](#3-publish-the-weekly-letter)
 4. [Add a Variant View pick or an alumni profile](#4-add-a-variant-view-pick-or-an-alumni-profile)
 5. [Send the email newsletter](#5-send-the-email-newsletter)
 6. [Put it on the internet (Vercel)](#6-put-it-on-the-internet-vercel)
-7. [Turn on the automatic 7 a.m. email](#7-turn-on-the-automatic-7-am-email)
+7. [Turn on the automatic Monday 7 a.m. email](#7-turn-on-the-automatic-monday-7-am-email)
 8. [Customize: name, logo, colors, team](#8-customize-name-logo-colors-team)
 9. [Where things live](#9-where-things-live)
 10. [Troubleshooting](#10-troubleshooting)
@@ -89,15 +89,16 @@ few hours when it's closed. If you see rate-limit warnings in the terminal, rais
 
 ---
 
-## 3. Publish the daily issue
+## 3. Publish the weekly letter
 
-Each weekday is one file: `content/issues/YYYY-MM-DD.mdx`. You write the words; the numbers fill in automatically.
+Each week is one file: `content/issues/YYYY-MM-DD.mdx`, dated the **Monday** it goes out. Write it on Sunday;
+the email sends Monday at 7 a.m. New York time. You write the words; the numbers fill in automatically.
 
-1. Create today's file:
+1. Create the file for the coming Monday:
    ```bash
    npm run new-issue
    ```
-   (For another date: `npm run new-issue -- 2026-11-20`.)
+   (For another date: `npm run new-issue -- 2026-11-30`.)
 2. Open the new file in `content/issues/` and replace the placeholder text:
    `headline`, `dek` (one-sentence summary), `editorsTake`, `movers` (ticker + one line on why it moved),
    and `macroCommentary`. Anything below the second `---` appears as extra notes at the bottom.
@@ -197,12 +198,12 @@ Vercel's free **Hobby** plan is enough to start. You'll also need a free **GitHu
 
 ### c) Publishing from now on
 
-Every `git push` to `main` redeploys the site automatically (about a minute). So the daily routine is:
+Every `git push` to `main` redeploys the site automatically (about a minute). So the Sunday routine is:
 
 ```bash
 npm run new-issue          # write the issue, delete draft: true
 git add -A
-git commit -m "Issue 2026-11-19"
+git commit -m "Issue 2026-11-23"
 git push
 ```
 
@@ -212,10 +213,10 @@ git push
 
 ---
 
-## 7. Turn on the automatic 7 a.m. email
+## 7. Turn on the automatic Monday 7 a.m. email
 
-It's already set up and **off**. `vercel.json` calls `/api/send-issue` on weekdays at 11:00 and 12:00 UTC
-(7 a.m. New York in summer and in winter). The route only sends when it's 7 a.m. in New York **and**
+It's already set up and **off**. `vercel.json` calls `/api/send-issue` on Mondays at 11:00 and 12:00 UTC
+(7 a.m. New York in summer and in winter). The route only sends when it's 7 a.m. Monday in New York **and**
 `CRON_ENABLED` is `true`.
 
 To turn it on: Vercel → Project → Settings → Environment Variables → set `CRON_ENABLED` to `true` (and make sure

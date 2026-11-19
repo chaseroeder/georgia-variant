@@ -72,7 +72,7 @@ export function SubscribeForm({ tone = "light" }: { tone?: "light" | "navy" }) {
         </p>
       ) : (
         <p className={`mt-2 px-2 text-xs ${onNavy ? "text-white/70" : "text-ink-muted"}`}>
-          Free, every weekday before the bell. Unsubscribe anytime.
+          Free, every Monday before the bell. Unsubscribe anytime.
         </p>
       )}
     </form>
