@@ -42,10 +42,8 @@ export const site = {
       "We're Emory students who think markets are easier to understand when someone explains them plainly. Every weekday morning we send a five-minute read on what moved, why, and what it means, written for students, not traders.",
     /** Edit this list with your real team. `role` shows under the name. */
     team: [
-      { name: "Your Name", role: "Editor-in-Chief", school: "Goizueta ’27" },
-      { name: "Teammate Name", role: "Markets Editor", school: "Emory College ’27" },
-      { name: "Teammate Name", role: "Macro Editor", school: "Emory College ’28" },
-      { name: "Teammate Name", role: "Founders Center Editor", school: "Goizueta ’28" },
+      { name: "Chase Roeder", role: "Co-Founder", school: "Emory ’30" },
+      { name: "Luke Frey", role: "Co-Founder", school: "Emory ’30" },
     ],
   },
 

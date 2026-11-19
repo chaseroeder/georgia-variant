@@ -20,6 +20,7 @@ const SECTIONS = [
 ];
 
 export default function AboutPage() {
+  const teamSize: number = site.about.team.length;
   return (
     <>
       <PageHeader tag="About" title={`Why ${site.name} exists`} dek={site.about.mission} />
@@ -54,7 +55,12 @@ export default function AboutPage() {
       </PageSection>
 
       <PageSection title="The team">
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Columns adapt to team size: 2 people fill one row; 3+ spread out */}
+        <ul
+          className={`grid gap-3 sm:grid-cols-2 ${
+            teamSize <= 2 ? "max-w-3xl" : teamSize === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"
+          }`}
+        >
           {site.about.team.map((m, i) => (
             <li key={`${m.name}-${i}`} className="flex items-center gap-4 rounded-2xl border border-rule bg-surface p-4 shadow-card">
               <Avatar name={m.name} size={48} />
