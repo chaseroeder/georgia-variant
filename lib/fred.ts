@@ -13,8 +13,17 @@ export interface Observation {
 
 const BASE = "https://api.stlouisfed.org/fred/series/observations";
 
+/**
+ * The key from the environment, with stray spaces, line breaks, or quotes
+ * removed (common when pasting into a dashboard). FRED keys are exactly
+ * 32 lowercase letters/numbers.
+ */
+function fredKey(): string {
+  return (process.env.FRED_API_KEY ?? "").trim().replace(/^["']|["']$/g, "");
+}
+
 export function hasFredKey(): boolean {
-  return Boolean(process.env.FRED_API_KEY);
+  return Boolean(fredKey());
 }
 
 /**
@@ -26,8 +35,12 @@ export async function fetchFredSeries(
   seriesId: string,
   opts: { start?: string; limit?: number } = {},
 ): Promise<Observation[]> {
-  const key = process.env.FRED_API_KEY;
+  const key = fredKey();
   if (!key) throw new Error("FRED_API_KEY is not set");
+  if (!/^[a-z0-9]{32}$/.test(key)) {
+    // Say what's wrong without ever printing the key itself
+    throw new Error(`FRED_API_KEY looks wrong (${key.length} characters; it should be 32 lowercase letters/numbers). Re-copy it from fredaccount.stlouisfed.org/apikeys`);
+  }
 
   const params = new URLSearchParams({
     series_id: seriesId,
@@ -39,7 +52,14 @@ export async function fetchFredSeries(
   if (opts.limit) params.set("limit", String(opts.limit));
 
   const res = await fetch(`${BASE}?${params}`, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`FRED ${seriesId}: HTTP ${res.status}`);
+  if (!res.ok) {
+    // FRED explains errors in JSON ({ error_message }); include that reason in the log
+    const reason = await res
+      .json()
+      .then((j: { error_message?: string }) => j.error_message ?? "")
+      .catch(() => "");
+    throw new Error(`FRED ${seriesId}: HTTP ${res.status}${reason ? ` (${reason.slice(0, 160)})` : ""}`);
+  }
 
   const json = (await res.json()) as { observations?: { date: string; value: string }[] };
   const obs = (json.observations ?? [])

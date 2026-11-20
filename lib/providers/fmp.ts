@@ -13,12 +13,17 @@
 
 const BASE = "https://financialmodelingprep.com/stable";
 
+/** The key with stray spaces, line breaks, or quotes removed (common when pasting) */
+function fmpKey(): string {
+  return (process.env.FMP_API_KEY ?? "").trim().replace(/^["']|["']$/g, "");
+}
+
 export function hasFmpKey(): boolean {
-  return Boolean(process.env.FMP_API_KEY);
+  return Boolean(fmpKey());
 }
 
 async function fmpGet<T>(path: string, params: Record<string, string>): Promise<T> {
-  const key = process.env.FMP_API_KEY;
+  const key = fmpKey();
   if (!key) throw new Error("FMP_API_KEY is not set");
   const qs = new URLSearchParams({ ...params, apikey: key });
   const res = await fetch(`${BASE}/${path}?${qs}`, { signal: AbortSignal.timeout(8000) });
