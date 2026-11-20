@@ -71,7 +71,7 @@ Restart `npm run dev` after changing this file.
 | Setting | What it's for | Where to get it (all free) |
 | --- | --- | --- |
 | `FRED_API_KEY` | Yields, Fed funds, CPI, jobs, GDP | https://fred.stlouisfed.org/docs/api/api_key.html |
-| `FMP_API_KEY` | Stock & index prices, movers, sectors | https://site.financialmodelingprep.com/developer/docs |
+| `FMP_API_KEY` | Index prices, gold, bitcoin, top movers, price history | https://site.financialmodelingprep.com/developer/docs |
 
 `.env.local` is never uploaded to GitHub (it's listed in `.gitignore`), so your keys stay private.
 On Mac, `bash scripts/key-from-clipboard.sh FRED_API_KEY` saves a copied key into `.env.local` for you.
@@ -80,8 +80,12 @@ On Mac, `bash scripts/key-from-clipboard.sh FRED_API_KEY` saves a copied key int
 and it has ready-made gainers/losers lists. All provider code sits behind `lib/marketData.ts`, so
 you can switch providers by editing that one file.
 
-**Staying under free limits:** prices refresh about every 15 minutes while the market is open and every
-few hours when it's closed. If you see rate-limit warnings in the terminal, raise `FMP_REFRESH_MINUTES`
+**What the free FMP plan covers:** index quotes, gold, bitcoin, top gainers/losers, and price history for many
+(not all) stocks. Oil and the dollar index come from FRED instead. The sector heatmap needs a paid FMP plan; it
+shows sample data until you set `FMP_PAID_PLAN=true` after upgrading.
+
+**Staying under free limits:** prices refresh about every 30 minutes while the market is open and every
+6 hours when it's closed (about 150 FMP calls a day, under the 250 limit). If you see HTTP 429 in the logs, raise `FMP_REFRESH_MINUTES`
 (e.g. to `45`).
 
 **Still seeing "Sample data"?** The terminal running `npm run dev` prints a `[marketData]` or

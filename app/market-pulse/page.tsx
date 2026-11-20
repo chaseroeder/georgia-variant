@@ -41,7 +41,7 @@ export default async function MarketPulsePage() {
         title={issue.headline}
         dek={issue.dek}
         isSample={anySample}
-        meta="Refreshes about every 15 minutes during market hours"
+        meta="Refreshes about every 30 minutes during market hours"
       />
 
       {/* Indices */}

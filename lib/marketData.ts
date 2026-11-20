@@ -9,17 +9,25 @@
  * missing or a request fails, we use mock data and set isSample: true,
  * so the page still renders and shows a "Sample data" badge.
  *
- * ── Caching & the free-tier budget (FMP: 250 calls/day) ──
- * All 20 quotes (ticker + sectors) come from ONE cached function, so a
- * refresh costs 1 call if FMP allows batch quotes, or ~20 if not, plus
- * 2 for gainers/losers. Refresh interval:
- *   • market open:  every FMP_REFRESH_MINUTES (default 15)
- *   • market closed: every few hours (prices aren't moving)
- * If you see rate-limit errors, raise FMP_REFRESH_MINUTES (e.g. 45).
+ * ── What the FMP free plan covers ──
+ * Free: index quotes (^GSPC, ^IXIC, ^DJI, ^RUT, ^VIX), gold, bitcoin,
+ * gainers/losers, and daily history for many (not all) stocks.
+ * Paid only (HTTP 402): batch quotes, sector ETFs (XLK…), the DXY dollar
+ * index, and oil futures. So:
+ *   • oil and the dollar come from FRED instead (free, daily closes)
+ *   • sector ETFs stay on sample data unless FMP_PAID_PLAN=true
+ *
+ * ── Staying under 250 FMP calls/day ──
+ * One refresh = 7 quote calls + 2 movers calls = 9 calls.
+ *   • market open:   every FMP_REFRESH_MINUTES (default 30) → ~13 refreshes
+ *   • market closed: every 6 hours                          → ~3 refreshes
+ *   • daily price history: every 6 hours
+ * That's roughly 150 calls on a busy day. If you ever see HTTP 429
+ * (rate limit) in the logs, raise FMP_REFRESH_MINUTES (e.g. 45).
  */
 import { cacheLife } from "next/cache";
 import { isoDaysAgo } from "./fred";
-import { getTenYear } from "./macroData";
+import { getFredLatest, getTenYear } from "./macroData";
 import { isMarketOpen, todayInNewYork } from "./marketHours";
 import { mockCloses, mockGainers, mockLosers, mockSectors, mockSpxHistory, mockTicker } from "./mockData";
 import { fmpDailyCloses, fmpMovers, fmpQuotes, hasFmpKey, type NormalizedQuote } from "./providers/fmp";
@@ -36,24 +44,38 @@ const TICKER_SYMBOLS: Record<string, string> = {
   DJI: "^DJI",
   RUT: "^RUT",
   VIX: "^VIX",
-  DXY: "DX-Y.NYB", // ICE U.S. Dollar Index
-  WTI: "CLUSD", // WTI crude futures
   GOLD: "GCUSD", // gold futures
   BTC: "BTCUSD",
 };
+
+/** Ticker items that come from FRED instead (not on FMP's free plan) */
+const FRED_TICKER: Record<string, string> = {
+  WTI: "DCOILWTICO", // WTI crude oil spot price, $/barrel
+  USD: "DTWEXBGS", // Nominal broad U.S. dollar index
+};
+
 const SECTOR_SYMBOLS = mockSectors.map((s) => s.symbol); // XLK, XLC, … (11 SPDR ETFs)
+
+/** Set FMP_PAID_PLAN=true in Vercel if you upgrade FMP: enables sector ETFs and batch quotes */
+const paidPlan = process.env.FMP_PAID_PLAN === "true";
 
 /* ───────────── Cache settings ───────────── */
 
-const refreshMinutes = Number(process.env.FMP_REFRESH_MINUTES) || 15;
+const refreshMinutes = Number(process.env.FMP_REFRESH_MINUTES) || 30;
 
 /** Pick a cache lifetime based on whether the market is open */
 function marketCache() {
   if (isMarketOpen()) {
-    cacheLife({ stale: 300, revalidate: refreshMinutes * 60, expire: 3600 });
+    cacheLife({ stale: 300, revalidate: refreshMinutes * 60, expire: 2 * 3600 });
   } else {
-    cacheLife("hours");
+    // Prices aren't moving: refresh every 6 hours to save API calls
+    cacheLife({ stale: 1800, revalidate: 6 * 3600, expire: 24 * 3600 });
   }
+}
+
+/** Daily closes change once a day, so a few refreshes a day is plenty */
+function historyCache() {
+  cacheLife({ stale: 3600, revalidate: 6 * 3600, expire: 2 * 24 * 3600 });
 }
 
 function result<T>(data: T, isSample: boolean): DataResult<T> {
@@ -68,7 +90,9 @@ async function getAllQuotes(): Promise<Record<string, NormalizedQuote> | null> {
   marketCache();
   if (!hasFmpKey()) return null;
   try {
-    const map = await fmpQuotes([...Object.values(TICKER_SYMBOLS), ...SECTOR_SYMBOLS]);
+    // Sector ETFs are paid-only on FMP, so only request them on a paid plan
+    const symbols = [...Object.values(TICKER_SYMBOLS), ...(paidPlan ? SECTOR_SYMBOLS : [])];
+    const map = await fmpQuotes(symbols, { tryBatch: paidPlan });
     return map.size > 0 ? Object.fromEntries(map) : null;
   } catch (err) {
     console.warn("[marketData] quotes failed, using mock:", err);
@@ -83,12 +107,22 @@ export async function getTickerQuotes(): Promise<DataResult<Quote[]>> {
   "use cache";
   marketCache();
 
-  const [quotes, tenYear] = await Promise.all([getAllQuotes(), getTenYear()]);
-  let usedMock = tenYear.isSample || !quotes;
+  const mockFor = (id: string) => mockTicker.find((m) => m.symbol === id)!;
+  const [quotes, tenYear, oil, dollar] = await Promise.all([
+    getAllQuotes(),
+    getTenYear(),
+    getFredLatest(FRED_TICKER.WTI, { value: mockFor("WTI").price, change: mockFor("WTI").change }),
+    getFredLatest(FRED_TICKER.USD, { value: mockFor("USD").price, change: mockFor("USD").change }),
+  ]);
+  let usedMock = tenYear.isSample || oil.isSample || dollar.isSample || !quotes;
 
   const data = mockTicker.map((mock): Quote => {
     if (mock.symbol === "US10Y") {
       return { ...mock, price: tenYear.data.value, change: tenYear.data.change };
+    }
+    if (mock.symbol === "WTI" || mock.symbol === "USD") {
+      const d = mock.symbol === "WTI" ? oil.data : dollar.data;
+      return { ...mock, price: d.value, change: d.change, changePct: d.changePct };
     }
     const live = quotes?.[TICKER_SYMBOLS[mock.symbol]];
     if (!live) {
@@ -105,6 +139,11 @@ export async function getTickerQuotes(): Promise<DataResult<Quote[]>> {
 export async function getSectorPerformance(): Promise<DataResult<SectorPerf[]>> {
   "use cache";
   marketCache();
+
+  // Free FMP plan: sector ETFs aren't available, so show sample data (with the badge)
+  if (!paidPlan) {
+    return result([...mockSectors].sort((a, b) => b.changePct - a.changePct), true);
+  }
 
   const quotes = await getAllQuotes();
   let usedMock = !quotes;
@@ -149,7 +188,7 @@ export async function getTopMovers(): Promise<DataResult<{ gainers: Mover[]; los
 /** About one month of S&P 500 daily closes, for the Market Pulse chart */
 export async function getSpxHistory(): Promise<DataResult<{ date: string; value: number }[]>> {
   "use cache";
-  cacheLife("hours"); // daily closes only change once a day
+  historyCache(); // daily closes only change once a day
 
   if (!hasFmpKey()) return result(mockSpxHistory, true);
   try {
@@ -175,7 +214,7 @@ export async function getDailyCloses(
   mockAnchor?: { date: string; price: number },
 ): Promise<DataResult<{ date: string; value: number }[]>> {
   "use cache";
-  cacheLife("hours");
+  historyCache();
 
   const providerSymbol = TICKER_SYMBOLS[symbol] ?? symbol;
   const today = todayInNewYork();

@@ -209,3 +209,31 @@ export async function getTenYear(): Promise<DataResult<RatePoint>> {
     return result(mockMacro.y10, true);
   }
 }
+
+/**
+ * Latest daily value + change for any FRED series, for ticker items that
+ * Financial Modeling Prep's free plan doesn't include (oil, the dollar).
+ * These FRED series are daily closes published with a short delay.
+ */
+export async function getFredLatest(
+  seriesId: string,
+  mock: { value: number; change: number },
+): Promise<DataResult<{ value: number; change: number; changePct: number; date: string }>> {
+  "use cache";
+  cacheLife("hours");
+
+  const fallback = { ...mock, changePct: mock.change / (mock.value - mock.change), date: "" };
+  if (!hasFredKey()) return result(fallback, true);
+  try {
+    const obs = await fetchFredSeries(seriesId, { limit: 10 });
+    const last = obs.at(-1)!;
+    const prev = obs.at(-2) ?? last;
+    return result(
+      { value: last.value, change: last.value - prev.value, changePct: prev.value ? last.value / prev.value - 1 : 0, date: last.date },
+      false,
+    );
+  } catch (err) {
+    console.warn(`[macroData] ${seriesId} failed, using mock:`, err);
+    return result(fallback, true);
+  }
+}

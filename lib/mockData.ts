@@ -18,7 +18,7 @@ export const mockTicker: Quote[] = [
   { symbol: "RUT", name: "Russell 2000", kind: "index", price: 2478.36, change: 21.7, changePct: 0.0088 },
   { symbol: "US10Y", name: "10Y Yield", kind: "yield", price: 4.12, change: 0.03, changePct: 0 },
   { symbol: "VIX", name: "VIX", kind: "volatility", price: 16.21, change: -0.58, changePct: -0.0345 },
-  { symbol: "DXY", name: "DXY", kind: "fx", price: 99.42, change: 0.18, changePct: 0.0018 },
+  { symbol: "USD", name: "Dollar (broad)", kind: "fx", price: 121.36, change: 0.18, changePct: 0.0015 },
   { symbol: "WTI", name: "Oil (WTI)", kind: "commodity", price: 61.84, change: -0.87, changePct: -0.0139 },
   { symbol: "GOLD", name: "Gold", kind: "commodity", price: 4052.3, change: 21.1, changePct: 0.0052 },
   { symbol: "BTC", name: "Bitcoin", kind: "crypto", price: 92340, change: 1940, changePct: 0.0215 },

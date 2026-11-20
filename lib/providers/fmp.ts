@@ -79,10 +79,14 @@ let batchUnsupported = false;
  * if the plan doesn't allow it, falls back to one request per symbol.
  * Symbols that fail individually are simply missing from the result.
  */
-export async function fmpQuotes(symbols: string[]): Promise<Map<string, NormalizedQuote>> {
+export async function fmpQuotes(
+  symbols: string[],
+  opts: { tryBatch?: boolean } = {},
+): Promise<Map<string, NormalizedQuote>> {
   const out = new Map<string, NormalizedQuote>();
 
-  if (!batchUnsupported) {
+  // Batch quotes are a paid FMP feature; only try them when told the plan supports it
+  if (opts.tryBatch && !batchUnsupported) {
     try {
       const rows = await fmpGet<FmpQuote[]>("batch-quote", { symbols: symbols.join(",") });
       rows.forEach((r) => out.set(r.symbol, normalize(r)));
