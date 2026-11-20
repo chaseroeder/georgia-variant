@@ -158,9 +158,11 @@ export async function getSectorPerformance(): Promise<DataResult<SectorPerf[]>> 
 }
 
 /**
- * Top 5 gainers and losers. FMP's lists include tiny penny stocks, so we
- * keep only names trading at $5 or more with a normal ticker.
+ * Top 5 gainers and losers. FMP's lists include penny stocks, leveraged
+ * ETFs, and blank-check "acquisition" shells, so we keep only regular
+ * companies trading at $5 or more with a normal ticker.
  */
+const NOT_A_COMPANY = /\b(ETF|ETN|Fund|Trust|2x|3x|Leveraged|Inverse|Daily|Acquisition Corp(oration)?|SPAC)\b/i;
 export async function getTopMovers(): Promise<DataResult<{ gainers: Mover[]; losers: Mover[] }>> {
   "use cache";
   marketCache();
@@ -172,7 +174,7 @@ export async function getTopMovers(): Promise<DataResult<{ gainers: Mover[]; los
     const [g, l] = await Promise.all([fmpMovers("gainers"), fmpMovers("losers")]);
     const clean = (rows: NormalizedQuote[]) =>
       rows
-        .filter((r) => r.price >= 5 && /^[A-Z.]{1,5}$/.test(r.symbol))
+        .filter((r) => r.price >= 5 && /^[A-Z.]{1,5}$/.test(r.symbol) && !NOT_A_COMPANY.test(r.name))
         .slice(0, 5)
         .map(({ symbol, name, price, changePct }) => ({ symbol, name, price, changePct }));
     const gainers = clean(g);
