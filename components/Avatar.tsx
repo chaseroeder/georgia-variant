@@ -18,9 +18,10 @@ export function Avatar({ name, photo, size = 56 }: { name: string; photo?: strin
     );
   }
 
-  const initials = name
-    .replace(/[^A-Za-z\s-]/g, "")
-    .split(/[\s-]+/)
+  // "Onu Okebie & Brian Boland" → "OB" (first initial of each person); "Jane Doe" → "JD"
+  const people = name.split(/\s*(?:&|\band\b)\s*/).filter(Boolean);
+  const words = (s: string) => s.replace(/[^A-Za-z\s-]/g, "").split(/[\s-]+/).filter(Boolean);
+  const initials = (people.length > 1 ? people.map((p) => words(p)[0] ?? "") : words(name))
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())

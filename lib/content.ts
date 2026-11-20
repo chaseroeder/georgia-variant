@@ -95,8 +95,13 @@ const alumniSchema = z.object({
   location: z.string().optional(),
   /** Path under /public, e.g. /alumni/jane-doe.jpg. Leave out for an initials avatar. */
   photo: z.string().optional(),
+  /** Optional wide photo at the top of the profile, e.g. two co-founders together */
+  coverPhoto: z.string().optional(),
+  /** Caption and credit under the cover photo, e.g. "Onu Okebie and Brian Boland. Photo courtesy HTL." */
+  coverCaption: z.string().optional(),
   headline: z.string().min(1),
-  advice: z.string().min(1),
+  /** Their advice for students, in their own words. Leave out if you don't have a real quote. */
+  advice: z.string().min(1).optional(),
   links: z.array(z.object({ label: z.string(), url: z.url() })).default([]),
   published: isoDate,
   /** Set true on template files so the page shows a "Template" label */
@@ -105,9 +110,18 @@ const alumniSchema = z.object({
 
 export type Alumnus = z.infer<typeof alumniSchema> & { slug: string; body: string };
 
+/** A photo path only counts once the file is actually in /public, so a profile can name it before it's added */
+function existingPublicFile(src: string | undefined): string | undefined {
+  if (!src) return undefined;
+  if (/^https?:\/\//.test(src)) return src;
+  return fs.existsSync(path.join(process.cwd(), "public", src)) ? src : undefined;
+}
+
 /** All alumni, most recently published first */
 export function getAlumni(): Alumnus[] {
-  return loadFolder("alumni", alumniSchema).sort((a, b) => b.published.localeCompare(a.published));
+  return loadFolder("alumni", alumniSchema)
+    .map((a) => ({ ...a, photo: existingPublicFile(a.photo), coverPhoto: existingPublicFile(a.coverPhoto) }))
+    .sort((a, b) => b.published.localeCompare(a.published));
 }
 
 export function getAlumnus(slug: string): Alumnus | undefined {

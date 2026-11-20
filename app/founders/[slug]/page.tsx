@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArticleSkeleton } from "@/components/ArticleSkeleton";
@@ -10,7 +11,7 @@ import { getAlumni, getAlumnus } from "@/lib/content";
 import { formatShortDate } from "@/lib/format";
 
 /**
- * One alumni profile: /founders/jordan-placeholder
+ * One alumni profile: /founders/onu-okebie-brian-boland
  * The slug is the file name in content/alumni/.
  */
 
@@ -71,15 +72,32 @@ async function AlumnusContent({ params }: { params: PageProps<"/founders/[slug]"
         </div>
       </header>
 
+      {a.coverPhoto && (
+        <figure className="mt-8">
+          <Image
+            src={a.coverPhoto}
+            alt={a.coverCaption ?? `Photo of ${a.name}`}
+            width={1200}
+            height={800}
+            sizes="(min-width: 768px) 720px, 100vw"
+            className="h-auto w-full rounded-2xl border border-rule object-cover"
+            priority
+          />
+          {a.coverCaption && <figcaption className="mt-2 text-sm text-ink-muted">{a.coverCaption}</figcaption>}
+        </figure>
+      )}
+
       <div className="mt-10">
         <Mdx source={a.body} />
       </div>
 
-      {/* Advice callout */}
+      {/* Advice callout (only when there's a real quote) */}
+      {a.advice && (
       <aside className="band-alt mt-12 rounded-2xl border-l-4 border-navy p-6 sm:p-8 dark:border-light-blue">
         <h2 className="font-sans text-xs font-semibold uppercase tracking-[0.14em] text-ink-muted">Advice for Emory students</h2>
         <p className="mt-3 font-serif text-xl leading-snug text-ink-strong sm:text-2xl">“{a.advice}”</p>
       </aside>
+      )}
 
       {a.links.length > 0 && (
         <ul className="mt-8 flex flex-wrap gap-2">
