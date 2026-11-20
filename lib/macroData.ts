@@ -114,12 +114,17 @@ export async function getMacroSnapshot(): Promise<DataResult<MacroSnapshot>> {
       "CPIAUCSL",
       (s) => {
         // Match by date (same month, one year earlier) rather than counting back 12 rows,
-        // so a missing month in FRED's history can't shift the comparison
-        const last = s.at(-1)!;
-        const yearAgo = `${Number(last.date.slice(0, 4)) - 1}${last.date.slice(4)}`;
-        const prev = s.find((o) => o.date === yearAgo);
-        if (!prev) throw new Error(`no CPI value for ${yearAgo}`);
-        return { value: last.value / prev.value - 1, date: last.date };
+        // so a missing month in FRED's history can't shift the comparison. If the newest
+        // month has no year-earlier value (e.g. Oct 2025 was never published), use the
+        // most recent month that does; the page labels the month it shows.
+        const byDate = new Map(s.map((o) => [o.date, o.value]));
+        for (let i = s.length - 1; i >= 0; i--) {
+          const cur = s[i];
+          const yearAgo = `${Number(cur.date.slice(0, 4)) - 1}${cur.date.slice(4)}`;
+          const prev = byDate.get(yearAgo);
+          if (prev) return { value: cur.value / prev - 1, date: cur.date };
+        }
+        throw new Error("no month with a year-earlier CPI value");
       },
       mockMacro.cpiYoY,
     ),
