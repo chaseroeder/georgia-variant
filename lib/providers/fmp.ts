@@ -27,7 +27,14 @@ async function fmpGet<T>(path: string, params: Record<string, string>): Promise<
   if (!key) throw new Error("FMP_API_KEY is not set");
   const qs = new URLSearchParams({ ...params, apikey: key });
   const res = await fetch(`${BASE}/${path}?${qs}`, { signal: AbortSignal.timeout(8000) });
-  if (!res.ok) throw new Error(`FMP ${path}: HTTP ${res.status}`);
+  if (!res.ok) {
+    // FMP explains errors in JSON ({ "Error Message": "..." }); include the reason (never the key)
+    const reason = await res
+      .json()
+      .then((j: Record<string, unknown>) => String(j["Error Message"] ?? j["message"] ?? ""))
+      .catch(() => "");
+    throw new Error(`FMP ${path}: HTTP ${res.status}${reason ? ` (${reason.slice(0, 120)})` : ""}`);
+  }
   const json = await res.json();
   // FMP sometimes returns 200 with an error message instead of data
   if (!Array.isArray(json)) throw new Error(`FMP ${path}: ${JSON.stringify(json).slice(0, 200)}`);
