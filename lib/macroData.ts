@@ -71,8 +71,10 @@ export async function getMacroSnapshot(): Promise<DataResult<MacroSnapshot>> {
 
   // Fire all requests at once. allSettled = one failure doesn't sink the rest.
   const ids = ["DGS2", "DGS10", "DGS30", "T10Y2Y", "FEDFUNDS", "DFEDTARL", "DFEDTARU", "CPIAUCSL", "UNRATE", "GDP"];
-  const limits: Record<string, number> = { CPIAUCSL: 13, FEDFUNDS: 1, DFEDTARL: 1, DFEDTARU: 1 };
-  const settled = await Promise.allSettled(ids.map((id) => fetchFredSeries(id, { limit: limits[id] ?? 2 })));
+  // Ask for a few extra observations: FRED leaves blanks ("." values, which we drop) for
+  // days or months with no data, e.g. October 2025 CPI was never published (shutdown).
+  const limits: Record<string, number> = { CPIAUCSL: 26, FEDFUNDS: 4, DFEDTARL: 5, DFEDTARU: 5 };
+  const settled = await Promise.allSettled(ids.map((id) => fetchFredSeries(id, { limit: limits[id] ?? 5 })));
   const series: Record<string, Observation[] | undefined> = {};
   ids.forEach((id, i) => {
     const s = settled[i];
@@ -87,8 +89,9 @@ export async function getMacroSnapshot(): Promise<DataResult<MacroSnapshot>> {
     if (list.every(Boolean)) {
       try {
         return build(...(list as Observation[][]));
-      } catch {
-        /* fall through to mock */
+      } catch (err) {
+        // Say why, so a silent fallback never hides a real problem
+        console.warn(`[macroData] ${[id].flat().join("+")} couldn't be calculated, using mock:`, err);
       }
     }
     usedMock = true;
@@ -110,8 +113,13 @@ export async function getMacroSnapshot(): Promise<DataResult<MacroSnapshot>> {
     cpiYoY: pick(
       "CPIAUCSL",
       (s) => {
-        if (s.length < 13) throw new Error("need 13 months");
-        return { value: s.at(-1)!.value / s.at(-13)!.value - 1, date: s.at(-1)!.date };
+        // Match by date (same month, one year earlier) rather than counting back 12 rows,
+        // so a missing month in FRED's history can't shift the comparison
+        const last = s.at(-1)!;
+        const yearAgo = `${Number(last.date.slice(0, 4)) - 1}${last.date.slice(4)}`;
+        const prev = s.find((o) => o.date === yearAgo);
+        if (!prev) throw new Error(`no CPI value for ${yearAgo}`);
+        return { value: last.value / prev.value - 1, date: last.date };
       },
       mockMacro.cpiYoY,
     ),
